@@ -1,74 +1,44 @@
-#include <SoftwareSerial.h>
 #include <Wire.h>
 #include <Adafruit_MotorShield.h>
 
-#define M1_STOP  B00000000
-#define M1_CW    B00000001
-#define M1_CCW   B00000010
-#define M2_STOP  B00000100
-#define M2_CW    B00000101
-#define M2_CCW   B00000111
+#define MAX_MILLIS_TO_WAIT 1000
 
 Adafruit_MotorShield MS = Adafruit_MotorShield();
-Adafruit_DCMotor *m1 = MS.getMotor(1);
-Adafruit_DCMotor *m2 = MS.getMotor(2);
+Adafruit_DCMotor *motors[2] = {MS.getMotor(1), MS.getMotor(2)};
 
-int serialCommand = 0;
-boolean speedCommand = false;
-Adafruit_DCMotor *currentMotor;
-// XBee's DOUT (TX) is connected to pin 6 (Arduino's Software RX)
-// XBee's DIN (RX) is connected to pin 7 (Arduino's Software TX)
-SoftwareSerial XBee(6, 7); // RX, TX
+int firstByte = 0;
+int secondByte = 0;
+
+unsigned long starttime;
 
 void setup(){
-  MS.begin();
-  XBee.begin(115200);
   Serial.begin(115200);
+  MS.begin();
+  Seial.println("Setup complete");
 }
 
 void loop(){
-  if(XBee.available()>0){
-    serialCommand = XBee.read();
-    Serial.print("Received: ");
-    Serial.println(serialCommand, DEC); 
-    if(speedCommand){
-      //Serial.println("In speed");
-      speedCommand = false;
-      currentMotor->setSpeed(serialCommand);
-    }
-    else{
-      Serial.println("In motor and direction");
-      //first byte read should be the motor and the direction
-      if(((byte) serialCommand & B100) == B0){ //Motor1
-        Serial.println("Motor1 if block");
-        m1->run(decodeDirection((byte) serialCommand));
-        currentMotor = m1;
-      }        
-      else{// Motor2
-        Serial.println("Motor2 if block");
-        m2->run(decodeDirection((byte) serialCommand));
-        currentMotor = m2;
-      }
-      speedCommand = true;
-    }    
+  starttime = millis();
+  while((Serial.available()<2) && ((millis() - starttime) < MAX_MILLIS_TO_WAIT)){
+    //loop here until we get two bytes of data or timout waiting
+  }
+  if(Serial.available() == 2){
+    firstByte = Serial.read();
+    secondByte = Serial.read();
+    Serial.print("first: ");
+    Serial.println(firstByte, BIN);
+    Serial.print("second: ");
+    Serial.println(secondByte,BIN);
+    //first byte read should be the motor and the direction
+    int motor = ((byte) firstByte & B11110000) >> 4;
+    Serial.print("Motor: ");
+    Serial.println(motor, DEC);
+    int motorCommand = ((byte) firstByte & B00001111);
+    Serial.print("Command: ");
+    Serial.println(motorCommand,DEC);
+    motors[motor]->run(motorCommand);
+    Serial.print("Speed: ");
+    Serial.println(secondByte,DEC);
+    motors[motor]->setSpeed((int) secondByte);
   }
 }
-
-int decodeDirection(byte sc){
-  byte d = sc & B11;
-  switch (d){
-    case B0:
-      Serial.println("RELEASE");
-      return RELEASE;
-      break;
-    case B1:
-      Serial.println("FORWARD");
-      return FORWARD;
-      break;
-    default:
-      Serial.println("BACKWARD");
-      return BACKWARD;
-      break;
-  }
-}        
-  
