@@ -55,13 +55,40 @@ var cambot = (function(c){
     }
 
     c.activate = function activate(){
-        if(gamepadSupported){
-            window.addEventListener("gamepadconnected",gamepadConnected);
-            window.addEventListener("gamepaddisconnected",gamepadDisconnected);
-            return true;
-        }
-        return false;
-    }
+        //Removed the gamepad code because it was a pain in the ass to
+        //constantly go find a gamepad to hook up to the computer.  This is an
+        //alternative solution.  Not as cool but still usable.
+        $('#left-wheel-slider').slider({
+            orientation:'vertical',
+            range: 'min',
+            min: 0,
+            max: 255,
+            value: 0,
+            slide: function(event, ui){
+                $('#left-speed').val(ui.value);
+                socket.emit('motor',{
+                    motor:1,
+                    command:forward,
+                    speed:ui.value
+                });
+            }
+        });
+        $('#right-wheel-slider').slider({
+            orientation:'vertical',
+            range: 'min',
+            min: 0,
+            max: 255,
+            value: 0,
+            slide: function(event, ui){
+                $('#right-speed').val(ui.value);
+                socket.emit('motor',{
+                    motor:2,
+                    command:forward,
+                    speed:ui.value
+                });
+            }
+        });
+    };
 
     return c;
 })(cambot || {});

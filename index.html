@@ -2,7 +2,9 @@
 <html>
     <head>
         <title>CamBot Controller</title>
-        <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.js"></script>
+        <link rel="stylesheet" href="jquery-ui.min.css">
+        <script type="text/javascript" src="//code.jquery.com/jquery-1.10.2.js"></script>
+        <script type="text/javascript" src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
         <script type="text/javascript" src="/socket.io/socket.io.js"></script>
         <script type="text/javascript" src="/controller.js"></script>
         <script type="text/javascript">
@@ -12,7 +14,15 @@
         </script>
     </head>
     <body>
-        <div id="gamepadPrompt"></div>
-        <div id="gamepadDisplay"></div>
+        <div style="float:left;margin:25px">
+            <h2>Left</h2>
+            <input type="text" id="left-speed" readonly style="width:25px;"/>
+            <div id="left-wheel-slider" style="height:200px;margin-top:35px;"></div>
+        </div>
+        <div style="float:left;margin:25px;">
+            <h2>Right</h2>
+            <input type="text" id="right-speed" readonly style="width:25px;"/>
+            <div id="right-wheel-slider" style="height:200px;margin-top:35px;"></div>
+        </div>
     </body>
 </html>

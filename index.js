@@ -1,23 +1,26 @@
-var app = require('express')();
+var express = require('express');
+var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+/*
 var SerialPort = require('serialport').SerialPort;
 var serial = new SerialPort('/dev/ttymxc3', {
     baudrate: 115200,
 });
-
-serial.on('open',function(){//make sure we have a serial connection
+*/
+//serial.on('open',function(){//make sure we have a serial connection
     console.log('serial connection extablished');
-
-    app.get('/', function(req, res){
-        res.sendfile('index.html');
+    
+    app.use('/', express.static(__dirname));
+    http.listen(3000, function(){
+        console.log('Listening on port 3000');
     });
 
     io.on('connection', function(socket){
         console.log('a user connected');
         socket.on('disconnect', function(){
             console.log("user disconnected");
-            serial.close();
+  //          serial.close();
         });
         socket.on('motor',function(data){
             console.dir(data);
@@ -26,15 +29,12 @@ serial.on('open',function(){//make sure we have a serial connection
             var firstbyte = (data.motor << 4) | data.command;
             //second byte holds the speed
             var secondbyte = data.speed;
-            serial.write([firstbyte,secondbyte]);
+//            serial.write([firstbyte,secondbyte]);
             console.log("first: " + firstbyte);
             console.log("second: " + secondbyte);
         });
     });
 
-    http.listen(3000, function(){
-        console.log('Listening on port 3000');
-    });
-});
+//});
 
 
